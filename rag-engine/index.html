@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regle RAG Dashboard</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --sidebar-bg: #f1f5f9;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-main);
+        }
+
+        .sidebar-item i {
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-mode-section {
+            margin-top: 2rem;
+        }
+
+        .search-mode-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-card .mode-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .mode-card .mode-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-left: 26px;
+        }
+
+        .mode-card.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .mode-card.active .mode-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .add-new {
+            margin-top: auto;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 1rem;
+            cursor: pointer;
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .top-nav {
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input {
+            width: 100%;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 0.8rem 1.5rem;
+            padding-right: 120px;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: border-color 0.2s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-icons {
+            position: absolute;
+            right: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            color: var(--text-muted);
+        }
+
+        .search-icons i {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        .search-icons i:hover { color: var(--accent); }
+
+        .content-area {
+            padding: 2.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .ai-greeting {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+
+        .ai-avatar {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- CARDS --- */
+        .results-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .results-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .results-card p {
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+
+        .report-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            text-decoration: none;
+        }
+
+        .link-snippet {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .link-title { font-weight: 600; margin-bottom: 4px; }
+        .link-domain { color: var(--text-muted); font-size: 0.8rem; }
+
+        /* --- SOURCES --- */
+        .sources-section {
+            margin-top: 2rem;
+        }
+
+        .sources-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .sources-header::before {
+            content: '';
+            height: 1px;
+            flex: 1;
+            background: var(--border);
+        }
+
+        .source-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .source-pill {
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .source-pill i { color: var(--accent); }
+        .source-pill.web-pill i { color: #10b981; }
+
+        /* --- LOADING --- */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: 100;
+            backdrop-filter: blur(2px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="section-header">
+            <i data-lucide="user" style="color: var(--accent)"></i>
+            Projects
+        </div>
+        
+        <div class="sidebar-item">
+            <i data-lucide="folder"></i>
+            AI Research
+        </div>
+        <div class="sidebar-item">
+            <i data-lucide="folder"></i>
+            Startup Trovilly
+        </div>
+        <div class="sidebar-item">
+            <i data-lucide="folder"></i>
+            Marketing Plan
+        </div>
+
+        <div class="sidebar-item" style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1.5rem;" onclick="document.getElementById('file-input').click()">
+            <i data-lucide="cloud-upload"></i>
+            Upload Files
+            <input type="file" id="file-input" hidden onchange="uploadFile(event)">
+        </div>
+
+        <div class="search-mode-section">
+            <div class="search-mode-header">
+                Search Mode
+                <i data-lucide="chevron-up"></i>
+            </div>
+            
+            <div class="mode-card" onclick="setMode('rag')">
+                <div class="mode-title"><i data-lucide="folder-search"></i> RAG</div>
+                <div class="mode-desc">Your Documents</div>
+            </div>
+            <div class="mode-card" onclick="setMode('web')">
+                <div class="mode-title"><i data-lucide="globe"></i> Web</div>
+                <div class="mode-desc">Internet Search</div>
+            </div>
+            <div class="mode-card active" onclick="setMode('hybrid')">
+                <div class="mode-title"><i data-lucide="orbit"></i> Hybrid</div>
+                <div class="mode-desc">RAG + Web</div>
+            </div>
+        </div>
+
+        <div class="add-new">
+            + Add New +
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main>
+        <nav class="top-nav">
+            <div class="search-container">
+                <input type="text" id="main-search" placeholder="Find this news about AI advancements" onkeydown="handleSearch(event)">
+                <div class="search-icons">
+                    <i data-lucide="search" onclick="triggerSearch()"></i>
+                    <i data-lucide="book-open"></i>
+                    <i data-lucide="user-circle"></i>
+                </div>
+            </div>
+        </nav>
+
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="content-area" id="results-view">
+            <!-- Starting / Idle State -->
+            <div id="idle-msg" style="text-align: center; margin-top: 15vh; color: var(--text-muted);">
+                <i data-lucide="search" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+                <p>Enter a query above to start research.</p>
+            </div>
+
+            <!-- Dynamic Content Container -->
+            <div id="content-container" style="display: none;">
+                <div class="ai-greeting">
+                    <div class="ai-avatar">
+                        <i data-lucide="sparkles" style="color: var(--accent); width: 20px; height: 20px;"></i>
+                    </div>
+                    <div id="greeting-text">Sure, here are the latest findings:</div>
+                </div>
+
+                <div id="cards-container">
+                    <!-- Cards will be injected here -->
+                </div>
+
+                <div class="sources-section">
+                    <div class="sources-header">Sources</div>
+                    <div class="source-grid" id="sources-container">
+                        <!-- Sources will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        const API_BASE = "http://127.0.0.1:8000/api/v1";
+        let currentMode = 'hybrid';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        async function handleSearch(e) {
+            if (e.key === 'Enter') triggerSearch();
+        }
+
+        async function triggerSearch() {
+            const query = document.getElementById("main-search").value;
+            if (!query) return;
+
+            document.getElementById("loading-overlay").style.display = "flex";
+            document.getElementById("idle-msg").style.display = "none";
+            document.getElementById("content-container").style.display = "none";
+
+            try {
+                // We use our orchestrator endpoint
+                const response = await fetch(`${API_BASE}/chat/orchestrate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        question: query,
+                        mode: currentMode 
+                    })
+                });
+                
+                const data = await response.json();
+                renderResults(data, query);
+            } catch (err) {
+                alert("Research failed. Ensure uvicorn is running on port 8000.");
+            } finally {
+                document.getElementById("loading-overlay").style.display = "none";
+            }
+        }
+
+        function renderResults(data, query) {
+            const container = document.getElementById("content-container");
+            const cards = document.getElementById("cards-container");
+            const sources = document.getElementById("sources-container");
+            
+            container.style.display = "block";
+            cards.innerHTML = "";
+            sources.innerHTML = "";
+
+            document.getElementById("greeting-text").innerText = `Sure, here are the findings about ${query}:`;
+
+            // Split generation into "cards" if it's long, or just one main card
+            const mainCard = document.createElement("div");
+            mainCard.className = "results-card";
+            mainCard.innerHTML = `
+                <h3>Research Synthesis</h3>
+                <p>${data.generation}</p>
+                <div class="report-pill">
+                    <i data-lucide="file-text"></i> Summary Report
+                </div>
+            `;
+            cards.appendChild(mainCard);
+
+            // Sources
+            if (data.documents && data.documents.length > 0) {
+                data.documents.forEach(doc => {
+                    const pill = document.createElement("div");
+                    const isInternal = doc.source === 'internal' || doc.source === 'supabase';
+                    pill.className = `source-pill ${isInternal ? '' : 'web-pill'}`;
+                    pill.innerHTML = `
+                        <i data-lucide="${isInternal ? 'file-text' : 'globe'}"></i>
+                        ${isInternal ? 'Docs: ' : 'Web: '}${doc.metadata?.title || doc.source}
+                    `;
+                    sources.appendChild(pill);
+                });
+            }
+
+            lucide.createIcons();
+        }
+
+        async function uploadFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/ingest/file`, {
+                    method: 'POST',
+                    body: formData
+                });
+                alert("File uploaded and analyzed!");
+            } catch (err) {
+                alert("Upload failed.");
+            }
+        }
+    </script>
+</body>
+</html>
