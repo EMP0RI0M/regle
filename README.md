@@ -163,5 +163,5 @@ The system requires several keys to function at 100% capacity:
 
 ---
 
-Built with precision by the **Regle Engineering Team**. 
+Built with precision by the **Nitroplux Engineering Team**. 
 Managed by [EMP0RI0M](https://github.com/EMP0RI0M).
